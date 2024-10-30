@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { SettingsContext } from '../../context/SettingsContext';
 import './ResultDisplay.css';
 import MedicineSuggestions from './MedicineSuggestions';
@@ -6,6 +6,7 @@ import LanguageSelector from '../LanguageSelector/LanguageSelector';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { HistoryContext } from '../../context/HistoryContext';
 import ImageSuggestions from './ImageSuggestions';
+import html2pdf from 'html2pdf.js';
 
 const genAI = new GoogleGenerativeAI('AIzaSyAJX0A1MUJ0DuOMzG2SIOKm0yJ-N8kScDI');
 
@@ -16,6 +17,8 @@ const ResultDisplay = ({ result, image }) => {
   const [extraQuestion, setExtraQuestion] = useState('');
   const [extraAnswer, setExtraAnswer] = useState('');
   const { addToHistory } = useContext(HistoryContext);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
     const translateResults = async () => {
@@ -158,6 +161,80 @@ const ResultDisplay = ({ result, image }) => {
     updateSettings({ ...settings, language: newLanguage });
   };
 
+  const generatePDF = useCallback(async () => {
+    if (!result) return;
+    
+    setIsGeneratingPDF(true);
+    try {
+      const pdfContent = document.createElement('div');
+      pdfContent.innerHTML = `
+        <div style="padding: 20px; font-family: Arial, sans-serif;">
+          <h1 style="color: #2c3e50; text-align: center; margin-bottom: 30px;">
+            🌿 Plant Analysis Report
+          </h1>
+          
+          <div style="margin-bottom: 20px; text-align: center;">
+            ${image ? `<img src="${image}" style="max-width: 300px; border-radius: 8px;" />` : ''}
+          </div>
+
+          ${structuredResult.qaFormat.map(qa => `
+            <div style="margin-bottom: 30px;">
+              <h3 style="color: #e74c3c; padding: 10px; background: rgba(231, 76, 60, 0.1); border-radius: 8px;">
+                ${qa.question}
+              </h3>
+              ${qa.answer.map(ans => `
+                <p style="color: #27ae60; padding: 10px; background: rgba(39, 174, 96, 0.1); border-radius: 8px; margin: 10px 0;">
+                  ${ans}
+                </p>
+              `).join('')}
+            </div>
+          `).join('')}
+
+          <div style="text-align: center; margin-top: 30px; color: #7f8c8d;">
+            Generated on: ${new Date().toLocaleDateString()}
+          </div>
+        </div>
+      `;
+
+      const opt = {
+        margin: 1,
+        filename: 'Plant_Analysis_Report.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+
+      await html2pdf().set(opt).from(pdfContent).save();
+      return opt.filename;
+    } catch (error) {
+      console.error('PDF Generation Error:', error);
+      throw new Error('Failed to generate PDF');
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  }, [result, image, structuredResult]);
+
+  const sharePDF = useCallback(async () => {
+    setIsSharing(true);
+    try {
+      const pdfFileName = await generatePDF();
+      if (!pdfFileName) return;
+
+      // Create sharing message
+      const shareText = encodeURIComponent(
+        "Check out this plant analysis report I generated!"
+      );
+      
+      // Open WhatsApp with the message
+      const whatsappUrl = `https://api.whatsapp.com/send?text=${shareText}`;
+      window.open(whatsappUrl, '_blank');
+    } catch (error) {
+      console.error('Sharing Error:', error);
+    } finally {
+      setIsSharing(false);
+    }
+  }, [generatePDF]);
+
   if (!result || typeof result !== 'string') {
     return (
         <div className="error-container">
@@ -170,6 +247,22 @@ const ResultDisplay = ({ result, image }) => {
     <div className="result-container">
       <div className="result-header">
         <h2>Analysis Results</h2>
+        <div className="action-buttons">
+          <button 
+            onClick={generatePDF}
+            className="pdf-button"
+            disabled={isGeneratingPDF || !result}
+          >
+            {isGeneratingPDF ? '📄 Generating...' : '📄 Generate PDF'}
+          </button>
+          <button 
+            onClick={sharePDF}
+            className="share-button"
+            disabled={isSharing || !result}
+          >
+            {isSharing ? '📤 Sharing...' : '📤 Share Report'}
+          </button>
+        </div>
         <LanguageSelector 
           selectedLanguage={settings.language}
           onLanguageChange={handleLanguageChange}

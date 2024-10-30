@@ -61,6 +61,7 @@ const CropInsights = () => {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isSharing, setIsSharing] = useState(false);
 
   const analyzeMarket = async () => {
     if (!selectedCrop || !selectedDistrict) return;
@@ -286,29 +287,44 @@ const CropInsights = () => {
   }, [analysis, selectedCrop, selectedDistrict]);
 
   const sharePDF = useCallback(async () => {
-    const pdfFileName = await generatePDF();
+    if (!analysis) return;
     
-    if (!pdfFileName) return;
+    setIsSharing(true);
+    try {
+      // Generate and download PDF
+      await generatePDF();
+      
+      // Create message
+      const message = `
+🌱 *Crop Weather Analysis Report*
+Crop: ${selectedCrop}
+District: ${selectedDistrict}
 
-    // Check if Web Share API is supported
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Agricultural Market Intelligence Report',
-          text: `Check out this crop analysis report for ${selectedCrop} in ${selectedDistrict}`,
-          // Note: We can't directly share files via Web Share API in all browsers
-          // Instead, we'll share a message with instructions
-        });
-      } catch (error) {
-        console.error('Error sharing:', error);
-        setError('Unable to share the report');
-      }
-    } else {
-      // Fallback for browsers that don't support Web Share API
-      const whatsappUrl = `https://wa.me/?text=I've generated a crop analysis report for ${selectedCrop} in ${selectedDistrict}. Please check the downloaded PDF.`;
+Key Findings:
+- Market Potential: ${analysis.marketPotential}
+- Climate Suitability: ${analysis.climateSuitability}
+- Water Requirements: ${analysis.waterRequirements}
+- Viability Score: ${analysis.viabilityScore}%
+
+Major Growing Areas: ${analysis.districtStats.majorAreas.join(', ')}
+Average Rainfall: ${analysis.districtStats.avgRainfall} mm/year
+
+Download the full PDF report for detailed analysis.
+      `.trim();
+
+      // Show guidance to user
+      alert('PDF has been downloaded. You can now attach it in WhatsApp after sharing the summary.');
+      
+      // Open WhatsApp
+      const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
       window.open(whatsappUrl, '_blank');
+    } catch (error) {
+      console.error('Error sharing PDF:', error);
+      setError('Unable to share the PDF report');
+    } finally {
+      setIsSharing(false);
     }
-  }, [generatePDF, selectedCrop, selectedDistrict]);
+  }, [analysis, selectedCrop, selectedDistrict, generatePDF]);
 
   return (
     <div className="crop-insights-container">

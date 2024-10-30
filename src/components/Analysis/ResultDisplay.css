@@ -212,3 +212,68 @@
 .qa-divider {
   display: none;
 }
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.pdf-button,
+.share-button {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.pdf-button {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.share-button {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.pdf-button:hover,
+.share-button:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.pdf-button:disabled,
+.share-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Loading states */
+.generating-pdf,
+.sharing-pdf {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.loading-message {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+}

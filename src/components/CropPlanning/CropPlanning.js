@@ -32,32 +32,46 @@ const CropPlanning = () => {
   const [proposedAcres, setProposedAcres] = useState('');
   const [analysis, setAnalysis] = useState(null);
   const [supplyDemandHistory, setSupplyDemandHistory] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const analyzeCropViability = async () => {
+  const calculateLocalAnalysis = () => {
     const cropInfo = cropData[selectedTaluk]?.crops[selectedCrop];
-    if (!cropInfo) return;
+    if (!cropInfo) return null;
 
     const currentAcreage = cropInfo.currentAcreage;
     const demandAcreage = cropInfo.demandAcreage;
     const proposedTotal = currentAcreage + Number(proposedAcres);
-    
     const viabilityScore = ((demandAcreage - currentAcreage) / demandAcreage) * 100;
     
-    setAnalysis({
+    return {
       ...cropInfo,
       proposedTotal,
       viabilityScore: Math.max(0, viabilityScore),
       recommendation: getRecommendation(viabilityScore),
       priceHistory: cropInfo.priceHistory,
       demandTrend: cropInfo.demandTrend
-    });
+    };
+  };
 
+  const fetchSupplyDemandData = async () => {
     try {
-      const result = await GeminiService.getQuickMarketAnalysis(selectedCrop);
-      setSupplyDemandHistory(result);
+      return await GeminiService.getQuickMarketAnalysis(selectedCrop);
     } catch (error) {
       console.error('Error fetching supply-demand history:', error);
+      return null;
     }
+  };
+
+  const analyzeCropViability = async () => {
+    setIsLoading(true);
+    
+    const localAnalysis = calculateLocalAnalysis();
+    setAnalysis(localAnalysis);
+
+    const supplyDemand = await fetchSupplyDemandData();
+    setSupplyDemandHistory(supplyDemand);
+    
+    setIsLoading(false);
   };
 
   const getRecommendation = (score) => {
@@ -69,11 +83,33 @@ const CropPlanning = () => {
 
   const chartOptions = {
     responsive: true,
+    animation: {
+      duration: 400 // Reduce animation duration
+    },
     plugins: {
       legend: {
         position: 'top',
       },
     },
+    // Disable hover animations for better performance
+    hover: {
+      animationDuration: 0
+    },
+    // Optimize responsiveness
+    maintainAspectRatio: false,
+    // Reduce the number of ticks for better performance
+    scales: {
+      y: {
+        ticks: {
+          maxTicksLimit: 8
+        }
+      },
+      x: {
+        ticks: {
+          maxTicksLimit: 10
+        }
+      }
+    }
   };
 
   const renderSupplyDemandChart = () => {
@@ -132,6 +168,17 @@ const CropPlanning = () => {
       </div>
     );
   };
+
+  const renderChartWithLoading = (chartComponent) => (
+    <div className="chart">
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="loader">Loading...</div>
+        </div>
+      )}
+      {chartComponent}
+    </div>
+  );
 
   return (
     <div className="crop-planning-container">
@@ -211,46 +258,50 @@ const CropPlanning = () => {
           </div>
 
           <div className="charts-container">
-            <div className="chart">
-              <h3>Price History</h3>
-              <Line 
-                data={{
-                  labels: analysis.priceHistory.map(p => p.month),
-                  datasets: [{
-                    label: 'Price per Quintal (₹)',
-                    data: analysis.priceHistory.map(p => p.price),
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1
-                  }]
-                }}
-                options={chartOptions}
-              />
-            </div>
+            {renderChartWithLoading(
+              <div className="chart">
+                <h3>Price History</h3>
+                <Line 
+                  data={{
+                    labels: analysis.priceHistory.map(p => p.month),
+                    datasets: [{
+                      label: 'Price per Quintal (₹)',
+                      data: analysis.priceHistory.map(p => p.price),
+                      borderColor: 'rgb(75, 192, 192)',
+                      tension: 0.1
+                    }]
+                  }}
+                  options={chartOptions}
+                />
+              </div>
+            )}
 
-            <div className="chart">
-              <h3>Demand vs Supply</h3>
-              <Bar
-                data={{
-                  labels: ['Current', 'With Your Proposal', 'Market Demand'],
-                  datasets: [{
-                    label: 'Acres',
-                    data: [
-                      analysis.currentAcreage,
-                      analysis.proposedTotal,
-                      analysis.demandAcreage
-                    ],
-                    backgroundColor: [
-                      'rgba(75, 192, 192, 0.5)',
-                      'rgba(255, 159, 64, 0.5)',
-                      'rgba(54, 162, 235, 0.5)'
-                    ]
-                  }]
-                }}
-                options={chartOptions}
-              />
-            </div>
+            {renderChartWithLoading(
+              <div className="chart">
+                <h3>Demand vs Supply</h3>
+                <Bar
+                  data={{
+                    labels: ['Current', 'With Your Proposal', 'Market Demand'],
+                    datasets: [{
+                      label: 'Acres',
+                      data: [
+                        analysis.currentAcreage,
+                        analysis.proposedTotal,
+                        analysis.demandAcreage
+                      ],
+                      backgroundColor: [
+                        'rgba(75, 192, 192, 0.5)',
+                        'rgba(255, 159, 64, 0.5)',
+                        'rgba(54, 162, 235, 0.5)'
+                      ]
+                    }]
+                  }}
+                  options={chartOptions}
+                />
+              </div>
+            )}
 
-            {renderSupplyDemandChart()}
+            {renderChartWithLoading(renderSupplyDemandChart())}
           </div>
         </div>
       )}

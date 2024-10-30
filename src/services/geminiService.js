@@ -116,5 +116,92 @@ export const GeminiService = {
       console.error('Error in plant analysis:', error);
       throw new Error('Unable to analyze plant conditions');
     }
+  },
+
+  // Quick initial analysis
+  async getQuickMarketAnalysis(cropName) {
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+      
+      const prompt = `
+        Provide a quick supply-demand analysis for ${cropName} farming in Karnataka.
+        Return a JSON array with exactly 3 seasons of data in this format:
+        [
+          {
+            "season": "string",
+            "supply": number,
+            "demand": number,
+            "priceImpact": "string"
+          }
+        ]
+        Keep the analysis focused and concise.
+      `;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      return jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+    } catch (error) {
+      console.error('Quick Analysis Error:', error);
+      throw new Error('Unable to generate quick analysis');
+    }
+  },
+
+  // Detailed analysis (can be loaded later)
+  async getDetailedAnalysis(cropName, district) {
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+      
+      const prompt = `
+        Analyze agricultural conditions and market potential for ${cropName} in ${district} district, Karnataka, India.
+        Consider local climate, soil types, rainfall patterns, and market access.
+        Return a JSON object with the following structure (pure JSON only):
+        {
+          "priceHistory": [
+            {"month": "string", "price": number}
+          ],
+          "districtComparison": [
+            {"district": "string", "production": number}
+          ],
+          "seasonalAnalysis": {
+            "kharif": number,
+            "rabi": number,
+            "summer": number
+          },
+          "districtStats": {
+            "majorAreas": ["string"],
+            "soilTypes": ["string"],
+            "avgRainfall": number
+          },
+          "viabilityScore": number (between 0-10),
+          "marketPotential": "string",
+          "waterRequirements": "string",
+          "climateSuitability": "string",
+          "recommendations": [
+            {
+              "type": "string",
+              "title": "string",
+              "message": "string"
+            }
+          ]
+        }
+      `;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('Invalid response format');
+      }
+      
+      return JSON.parse(jsonMatch[0]);
+    } catch (error) {
+      console.error('Gemini API Error:', error);
+      throw new Error('Unable to generate district analysis');
+    }
   }
 }; 

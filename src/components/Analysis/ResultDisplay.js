@@ -5,8 +5,9 @@ import MedicineSuggestions from './MedicineSuggestions';
 import LanguageSelector from '../LanguageSelector/LanguageSelector';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { HistoryContext } from '../../context/HistoryContext';
+import ImageSuggestions from './ImageSuggestions';
 
-const genAI = new GoogleGenerativeAI('YOUR_API_KEY_HERE');
+const genAI = new GoogleGenerativeAI('AIzaSyAJX0A1MUJ0DuOMzG2SIOKm0yJ-N8kScDI');
 
 const ResultDisplay = ({ result, image }) => {
   const { settings, updateSettings } = useContext(SettingsContext);
@@ -65,7 +66,7 @@ const ResultDisplay = ({ result, image }) => {
     if (!extraQuestion) return;
 
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const prompt = `Answer the following question based on the plant analysis: ${extraQuestion}`;
       const result = await model.generateContent(prompt);
       const response = await result.response;
@@ -212,6 +213,7 @@ const ResultDisplay = ({ result, image }) => {
           </div>
         )}
       </div>
+      <ImageSuggestions analysisResult={result} />
     </div>
   );
 };

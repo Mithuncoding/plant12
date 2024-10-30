@@ -13,6 +13,7 @@ import {
 } from 'chart.js';
 import { cropData } from '../../data/cropPlanningData';
 import './CropPlanning.css';
+import { GeminiService } from '../../services/geminiService';
 
 ChartJS.register(
   CategoryScale,
@@ -30,8 +31,9 @@ const CropPlanning = () => {
   const [selectedCrop, setSelectedCrop] = useState('');
   const [proposedAcres, setProposedAcres] = useState('');
   const [analysis, setAnalysis] = useState(null);
+  const [supplyDemandHistory, setSupplyDemandHistory] = useState(null);
 
-  const analyzeCropViability = () => {
+  const analyzeCropViability = async () => {
     const cropInfo = cropData[selectedTaluk]?.crops[selectedCrop];
     if (!cropInfo) return;
 
@@ -49,6 +51,13 @@ const CropPlanning = () => {
       priceHistory: cropInfo.priceHistory,
       demandTrend: cropInfo.demandTrend
     });
+
+    try {
+      const result = await GeminiService.getQuickMarketAnalysis(selectedCrop);
+      setSupplyDemandHistory(result);
+    } catch (error) {
+      console.error('Error fetching supply-demand history:', error);
+    }
   };
 
   const getRecommendation = (score) => {
@@ -65,6 +74,63 @@ const CropPlanning = () => {
         position: 'top',
       },
     },
+  };
+
+  const renderSupplyDemandChart = () => {
+    if (!supplyDemandHistory) return null;
+
+    return (
+      <div className="chart">
+        <h3>Supply-Demand Balance</h3>
+        <Bar
+          data={{
+            labels: ['Previous Season', 'Current Season', 'Next Season (Projected)'],
+            datasets: [
+              {
+                label: 'Market Demand',
+                data: supplyDemandHistory.map(s => s.demand),
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1,
+                order: 1
+              },
+              {
+                label: 'Actual Supply',
+                data: supplyDemandHistory.map(s => s.supply),
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1,
+                order: 2
+              }
+            ]
+          }}
+          options={{
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Acres'
+                }
+              }
+            },
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  afterBody: (tooltipItems) => {
+                    const dataIndex = tooltipItems[0].dataIndex;
+                    const balance = supplyDemandHistory[dataIndex].demand - 
+                                  supplyDemandHistory[dataIndex].supply;
+                    return `Balance: ${Math.abs(balance)} acres ${balance > 0 ? 'shortage' : 'surplus'}`;
+                  }
+                }
+              }
+            }
+          }}
+        />
+      </div>
+    );
   };
 
   return (
@@ -183,6 +249,8 @@ const CropPlanning = () => {
                 options={chartOptions}
               />
             </div>
+
+            {renderSupplyDemandChart()}
           </div>
         </div>
       )}

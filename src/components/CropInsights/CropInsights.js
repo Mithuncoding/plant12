@@ -16,6 +16,7 @@ import {
 import { GeminiService } from '../../services/geminiService';
 import { karnatakaDistricts } from '../../data/karnatakaData';
 import './CropInsights.css';
+import html2pdf from 'html2pdf.js';
 
 ChartJS.register(
   CategoryScale,
@@ -216,11 +217,115 @@ const CropInsights = () => {
     );
   }, [analysis]);
 
+  const generatePDF = useCallback(async () => {
+    if (!analysis) return;
+
+    // Create a new div for PDF content
+    const pdfContent = document.createElement('div');
+    pdfContent.innerHTML = `
+      <div style="padding: 20px; font-family: Arial, sans-serif;">
+        <h1 style="color: #2c3e50; text-align: center; margin-bottom: 30px;">
+          🌾 Agricultural Market Intelligence Report
+        </h1>
+        
+        <div style="margin-bottom: 20px;">
+          <h2>Crop Analysis for ${selectedCrop} in ${selectedDistrict}</h2>
+          <p><strong>Generated on:</strong> ${new Date().toLocaleDateString()}</p>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+          <h3>District Statistics</h3>
+          <p><strong>Major Growing Areas:</strong> ${analysis.districtStats.majorAreas.join(', ')}</p>
+          <p><strong>Soil Types:</strong> ${analysis.districtStats.soilTypes.join(', ')}</p>
+          <p><strong>Average Rainfall:</strong> ${analysis.districtStats.avgRainfall} mm/year</p>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+          <h3>Crop Requirements</h3>
+          <p><strong>Water Requirements:</strong> ${analysis.waterRequirements}</p>
+          <p><strong>Climate Suitability:</strong> ${analysis.climateSuitability}</p>
+          <p><strong>Market Potential:</strong> ${analysis.marketPotential}</p>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+          <h3>Recommendations</h3>
+          ${analysis.recommendations.map(rec => `
+            <div style="margin-bottom: 10px;">
+              <p><strong>${rec.title}</strong></p>
+              <p>${rec.message}</p>
+            </div>
+          `).join('')}
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+          <p><strong>Overall Viability Score:</strong> ${Math.round(analysis.viabilityScore)}%</p>
+        </div>
+      </div>
+    `;
+
+    const opt = {
+      margin: 1,
+      filename: `${selectedCrop}_${selectedDistrict}_Report.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    try {
+      const pdf = await html2pdf().set(opt).from(pdfContent).save();
+      return opt.filename;
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      setError('Failed to generate PDF');
+    }
+  }, [analysis, selectedCrop, selectedDistrict]);
+
+  const sharePDF = useCallback(async () => {
+    const pdfFileName = await generatePDF();
+    
+    if (!pdfFileName) return;
+
+    // Check if Web Share API is supported
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Agricultural Market Intelligence Report',
+          text: `Check out this crop analysis report for ${selectedCrop} in ${selectedDistrict}`,
+          // Note: We can't directly share files via Web Share API in all browsers
+          // Instead, we'll share a message with instructions
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+        setError('Unable to share the report');
+      }
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      const whatsappUrl = `https://wa.me/?text=I've generated a crop analysis report for ${selectedCrop} in ${selectedDistrict}. Please check the downloaded PDF.`;
+      window.open(whatsappUrl, '_blank');
+    }
+  }, [generatePDF, selectedCrop, selectedDistrict]);
+
   return (
     <div className="crop-insights-container">
       <div className="insights-header">
         <h1>🌾 Agricultural Market Intelligence</h1>
         <p>District-wise crop analysis and market predictions for Karnataka</p>
+        <div className="action-buttons">
+          <button 
+            onClick={generatePDF}
+            className="pdf-button"
+            disabled={!analysis}
+          >
+            📄 Generate PDF
+          </button>
+          <button 
+            onClick={sharePDF}
+            className="share-button"
+            disabled={!analysis}
+          >
+            📤 Share Report
+          </button>
+        </div>
       </div>
 
       <div className="analysis-form">

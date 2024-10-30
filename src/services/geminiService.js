@@ -50,7 +50,19 @@ export const GeminiService = {
         throw new Error('Invalid response format');
       }
       
-      return JSON.parse(jsonMatch[0]);
+      const parsedData = JSON.parse(jsonMatch[0]);
+      const viabilityScore = Number(parsedData.viabilityScore);
+      
+      const normalizedScore = viabilityScore > 10 ? 
+        (viabilityScore / 10).toFixed(1) : 
+        viabilityScore.toFixed(1);
+      
+      const responseData = {
+        ...parsedData,
+        viabilityScore: normalizedScore
+      };
+      
+      return responseData;
     } catch (error) {
       console.error('Gemini API Error:', error);
       throw new Error('Unable to generate district analysis');

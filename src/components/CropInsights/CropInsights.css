@@ -149,7 +149,6 @@
   .score {
     font-size: 2.5rem;
     font-weight: 700;
-    margin: 1rem 0;
     padding: 1rem;
     border-radius: 50%;
     width: 120px;
@@ -158,6 +157,25 @@
     align-items: center;
     justify-content: center;
     margin: 0 auto;
+    position: relative;
+  }
+  
+  .score-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  
+  .score-value {
+    font-size: 2.2rem;
+    font-weight: 700;
+  }
+  
+  .score-denominator {
+    font-size: 1.6rem;
+    opacity: 0.9;
+    margin-left: 2px;
   }
   
   .score.high {

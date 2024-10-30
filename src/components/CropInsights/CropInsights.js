@@ -193,8 +193,13 @@ const CropInsights = () => {
         <div className="recommendations-card">
           <div className="recommendation-score">
             <h3>Viability Score</h3>
-            <div className={`score ${analysis.viabilityScore >= 70 ? 'high' : analysis.viabilityScore >= 40 ? 'medium' : 'low'}`}>
-              {Math.round(analysis.viabilityScore)}%
+            <div className={`score ${analysis.viabilityScore >= 7 ? 'high' : analysis.viabilityScore >= 4 ? 'medium' : 'low'}`}>
+              <div className="score-text">
+                <span className="score-value">
+                  {Number(analysis.viabilityScore)}
+                </span>
+                <span className="score-denominator">/10</span>
+              </div>
             </div>
             <div className="score-label">Overall Viability</div>
           </div>

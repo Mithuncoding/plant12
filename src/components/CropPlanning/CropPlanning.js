@@ -41,12 +41,12 @@ const CropPlanning = () => {
     const currentAcreage = cropInfo.currentAcreage;
     const demandAcreage = cropInfo.demandAcreage;
     const proposedTotal = currentAcreage + Number(proposedAcres);
-    const viabilityScore = ((demandAcreage - currentAcreage) / demandAcreage) * 100;
+    const viabilityScore = Math.min(10, ((demandAcreage - currentAcreage) / demandAcreage) * 10);
     
     return {
       ...cropInfo,
       proposedTotal,
-      viabilityScore: Math.max(0, viabilityScore),
+      viabilityScore: Math.max(0, viabilityScore.toFixed(1)),
       recommendation: getRecommendation(viabilityScore),
       priceHistory: cropInfo.priceHistory,
       demandTrend: cropInfo.demandTrend

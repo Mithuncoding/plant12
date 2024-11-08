@@ -1,70 +1,55 @@
-# Getting Started with Create React App
+## Description
+The main goal of our project is to help address challenges faced by farmers by providing a solution for plant disease detection. Our system is designed to detect over 500+ types of plant diseases, making it a valuable tool for tackling real-time agricultural issues. You can explore the functionalities of this project by running the code provided.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+## Prerequisites
+To run this project, you’ll need the following software and libraries:
 
-In the project directory, you can run:
+Software
+Visual Studio Code: For code editing and project execution.
+GitHub: For version control.
+Versal: For hosting the project website.
 
-### `npm start`
+## to directly web host and watch the website
+https://plant10-hm32.vercel.app/
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Libraries
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Install the following libraries using npm
 
-### `npm test`
+npm install react@18.3.1 react-dom@18.3.1
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### `npm run build`
+npm install @mui/material@6.1.5 @mui/icons-material@6.1.5 @emotion/react@11.13.3 @emotion/styled@11.13.0
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+npm install @google/generative-ai@0.21.0
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+npm install axios@1.7.7
 
-### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+npm install react-router-dom@6.27.0
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+npm install react-speech-recognition@3.10.0
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-## Learn More
+npm install react-toastify@10.0.6
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+npm install framer-motion@11.11.10
 
-### Code Splitting
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+npm install react-icons@5.3.0
 
-### Analyzing the Bundle Size
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+npm install @testing-library/jest-dom@5.17.0 @testing-library/react@13.4.0 @testing-library/user-event@13.5.0
 
-### Making a Progressive Web App
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+npm install web-vitals@2.1.4
 
-### Advanced Configuration
+npm install --save-dev @babel/plugin-proposal-private-property-in-object@7.21.11
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+SO BUILDING FULL STACK APP IS VERY NEW FOR US , SO IF ANY MISTAKES OCCUR DURING BUILDING THE APPLICATION 
+PLEASE CONTACT +91 8792048404 VIA whatsapp or call
+or mail mithungowda5694@gmail.com

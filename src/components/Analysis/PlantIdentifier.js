@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { HistoryContext } from '../../context/HistoryContext';
 import './PlantIdentifier.css';
 
-const genAI = new GoogleGenerativeAI('AIzaSyAJX0A1MUJ0DuOMzG2SIOKm0yJ-N8kScDI');
+const genAI = new GoogleGenerativeAI('AIzaSyA1kUgKi87qD14cUVf02B37s6qiJMMOakM');
 
 // Utility Functions
 export const fetchPlantInfo = async (plantName, language = 'en') => {
